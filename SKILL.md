@@ -113,6 +113,18 @@ A push is settled when, after a full wait, there are no new non-`✅` Bot
 comments **and** every check has reached a terminal state. Do not call it
 green while any check is still pending.
 
+## Frozen artifacts
+
+Some files in a stack are measured, not written: a prompt whose F1 was
+recorded in the PR body, a schema pinned to an external table, a fixture that
+is a copy of a real artifact. A finding against the *text* of such a file --
+"this sentence contradicts that one", "this claim is false for half the set" --
+is usually correct as prose and still not a fix to make: changing the file
+invalidates the number the PR reports. Leave those findings open, say so in the
+round report, and let the human decide whether a re-measurement is worth it.
+Byte-compare the frozen file against its recorded version after every restack;
+a rebase can change it without anyone intending to.
+
 ## Deciding what to fix
 
 Fix now when the finding is mechanical and checkable: a wrong operator, a
@@ -147,20 +159,52 @@ real; two mutation checks in one session were invalid for exactly that reason.
 
 ## The push cycle for a stack
 
-Fix on the branch owning the code, then restack upward. With Graphite:
+Run the loop stack-wise, one round across every PR, not PR by PR:
 
-```bash
-gt modify --commit -m "<message>"   # on the owning branch
-gt submit --no-interactive --no-stack
-```
+1. Pull `main`, then read every open finding on every PR in the stack before
+   editing anything. A finding on an upper PR often belongs to a lower one --
+   the file it names was introduced there -- and fixing it where it lives
+   means the fix flows up through the restack instead of being repeated.
+2. Fix bottom-up, on the branch that owns the code. Reproduce first.
+3. Keep every branch at **one commit**: squash the fix into the branch's
+   commit (`git reset --soft <parent> && git commit -F <message>`) and extend
+   the commit body with what changed and why. A reviewer reads the body as the
+   PR description; a "fixup" commit tells them nothing.
+4. Restack upward, one branch at a time, with `git rebase --onto <parent>
+   HEAD~1`. Resolve each conflict by hand -- `rerere` and a stale base will
+   happily produce a merge that is syntactically clean and wrong (a
+   self-dependent Bazel target, a hunk from both sides). Read every resolved
+   file, not just the markers.
+5. Run the test suite at **every** tip after a restack, not only the branch
+   that changed. Then the repo's done-gate (format, lint, target coverage).
+6. Push the whole stack in one submit (`gt submit --stack --force
+   --no-interactive`), then the side branches. Record push time: it is what you
+   measure the re-review latency against.
+7. Wait for Devin and CI on the new heads (see Timing the wait), then repeat
+   from step 1 until a round produces no verified finding and no failing check.
 
-Without Graphite, `git push --force-with-lease` the bottom branch, rebase each
-child on its new parent, and push those with `--force-with-lease` too.
+With Graphite, `gt modify --commit` on the owning branch and `gt submit
+--stack` do steps 3 and 6; `gt restack` does step 4 but refuses branches that
+are checked out in a worktree, which is where a stack usually lives. Without
+Graphite, `git push --force-with-lease` the bottom branch, rebase each child on
+its new parent, and push those with `--force-with-lease` too.
 
-Re-run tests at **every** tip after a restack, not only the branch that
-changed. Retarget a PR's base before pushing its branch: pushing a base branch
-that already contains a child's head makes GitHub mark the child **merged** and
+Retarget a PR's base before pushing its branch: pushing a base branch that
+already contains a child's head makes GitHub mark the child **merged** and
 delete it, and a merged PR cannot be reopened.
+
+When a bottom PR merges mid-loop, `git pull --ff-only` `main`, rebase the next
+branch onto `main` with `--onto`, re-point its tracking parent (`gt track
+<branch> -p main`), and cascade. GitHub retargets the children's bases itself.
+Check that the squash commit's tree matches your branch tip before trusting it
+(`git diff --quiet <squash> <branch>`); other PRs land between your base and
+the merge, so a non-empty diff is normal only when it touches files outside
+your change.
+
+A colleague's comment that a fix resolves gets exactly one reply -- `Done` --
+and the thread resolved, in the same pass as the push that carries the fix.
+Nothing else is posted on a human thread; the diff and the commit body carry
+the explanation.
 
 ## Reporting a round
 
