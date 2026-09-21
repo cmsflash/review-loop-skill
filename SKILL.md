@@ -206,6 +206,26 @@ and the thread resolved, in the same pass as the push that carries the fix.
 Nothing else is posted on a human thread; the diff and the commit body carry
 the explanation.
 
+Devin's threads are resolved by you, not by Devin: it posts `✅ Resolved`
+follow-ups only sometimes, and an open bot thread blocks the merge wherever
+`required_review_thread_resolution` is on. Once a finding is addressed in
+code, reply `Done` and resolve it; for a refuted or analysis-only finding,
+reply with the one-line reason and resolve it. Verify each against the current
+head first -- a thread anchored to unchanged lines is re-reported every round
+even after the fix, so "still open" does not mean "still true".
+
+## What actually gates a merge
+
+Read the branch rules (`gh api repos/<o>/<r>/rules/branches/main`) and the
+repo's own approval check before saying anything is mergeable. A ruleset with
+`required_approving_review_count: 0` does not mean approvals are optional: an
+`OWNERS`-style check-run (here `core/lib/owners/check_pr.py`, the `Owners`
+status) can require a non-author owner's approval and is listed as a required
+status check. Its approvals persist across pushes unless dismissed, and it only
+runs for PRs based on `main`, so a mid-stack PR shows no status until the PR
+below it merges and GitHub retargets it. Report the gate as the check's own
+output states it ("Owners approval required"), not as you infer it.
+
 ## Reporting a round
 
 Give the human, each round:
