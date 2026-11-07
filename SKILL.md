@@ -137,8 +137,9 @@ partial reward should mean, whether one bad input should abort a batch, how
 strict a new contract should be. These are cheap to list and expensive to
 guess at.
 
-Do not reply to Devin, do not resolve threads, do not argue. It re-reviews the
-code, not the conversation.
+Do not argue with Devin: it re-reviews the code, not the conversation. Reply to
+and resolve its threads as the push cycle below describes; never resolve a
+human's thread.
 
 ## Fixing without creating new findings
 
