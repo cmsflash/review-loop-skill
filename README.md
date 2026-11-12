@@ -13,6 +13,9 @@ The parts that are easy to get wrong:
 - Classify comments by **posting account**, not content. `user.type == "Bot"`
   is in scope; `"User"` is reported verbatim and left alone, even when an
   agent obviously wrote it on the human's behalf.
+- A Bot finding that needs a design call is a Tricky AI comment: one decision
+  per thread in the managing thread's decisions.md, with its id in
+  `_support/tricky_comments.json` (the `decisions-md` skill).
 - Findings are **inline** review comments (`pulls/N/comments`). The issue
   endpoint is empty, so a PR can look clean when it is not.
 - A resolved finding is a **new** `✅ Resolved` comment, not an edit — count

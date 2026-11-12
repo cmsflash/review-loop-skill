@@ -40,6 +40,10 @@ The reason is scope, not ability: a human comment is a conversation the human
 started with their teammate, and closing it out silently takes that
 conversation away from them. Surface it; let them decide.
 
+A PR table may count open threads as AI, Tricky AI and Human comments (the
+`decisions-md` skill). That count never changes who acts: the loop handles
+Bot-account threads only, whatever a table calls a thread.
+
 ## Reading Devin's findings
 
 Findings are **inline review comments**, not issue comments. The issue endpoint
@@ -135,7 +139,10 @@ failing test before editing.
 Accumulate for the human when the finding implies a design choice: what a
 partial reward should mean, whether one bad input should abort a batch, how
 strict a new contract should be. These are cheap to list and expensive to
-guess at.
+guess at. Each is a Tricky AI comment: the thread that manages the PR puts it
+to the human as one decision per thread and lists the thread's id in
+`_support/tricky_comments.json`, as the `decisions-md` skill describes. A
+finding you fix, refute or answer is an AI comment and never a decision.
 
 Do not argue with Devin: it re-reviews the code, not the conversation. Reply to
 and resolve its threads as the push cycle below describes; never resolve a
@@ -234,7 +241,7 @@ Give the human, each round:
 - which Devin findings were fixed, and the evidence each was real
 - which CI failures were fixed, and which were re-run as environment (with
   the invocation link and the passing re-run)
-- the running list of accumulated judgement-call findings, by PR
+- the Tricky AI comments, by PR, each with its decision number
 - **every human-account comment, verbatim and untouched**, by PR
 - Graphite links (`https://app.graphite.com/github/pr/<owner>/<repo>/<n>`)
 
