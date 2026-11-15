@@ -26,7 +26,12 @@ human's behalf. What matters is the posting account, not the prose:
 
 - `user.type == "Bot"` (Devin posts as `devin-ai-integration[bot]`) → in scope.
 - `user.type == "User"` → **out of scope**. Collect it verbatim for the report
-  and leave it untouched. Do not fix, reply, resolve, or react.
+  and leave it untouched. Do not fix, reply, resolve, or react. This holds
+  when the comment says an agent wrote it ("Suggestion from Codex (AI
+  agent)", posted from a reviewer's account): the reviewer chose to post it,
+  so it is theirs. Hand each such comment to the human as its own decision,
+  one per comment; never group several into one item, and never treat one as
+  a Devin-style finding.
 
 Classify every comment before reading its content, so a persuasive human
 comment does not slip through on merit:
